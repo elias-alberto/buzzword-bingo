@@ -1,0 +1,7 @@
+"use client";
+import {useEffect,useState} from "react";
+export const THEMES=[{id:"dark",label:"Dark",icon:"☾"},{id:"light",label:"Light",icon:"☀"},{id:"halloween",label:"Halloween",icon:"🎃"},{id:"christmas",label:"Christmas",icon:"🎄"}];
+function readCookie(n){return decodeURIComponent(document.cookie.split("; ").find(v=>v.startsWith(n+"="))?.split("=").slice(1).join("=")||"")}
+function saveCookie(n,v){const secure=location.protocol==="https:"?"; Secure":"";document.cookie=`${n}=${encodeURIComponent(v)}; Max-Age=31536000; Path=/; SameSite=Lax${secure}`}
+export function ThemePicker(){const [theme,setTheme]=useState("dark");useEffect(()=>{const t=readCookie("bb_theme")||"dark";setTheme(t);document.documentElement.dataset.theme=t},[]);function pick(t){setTheme(t);saveCookie("bb_theme",t);document.documentElement.dataset.theme=t}return <div className="themePicker" aria-label="Visual theme">{THEMES.map(t=><button type="button" key={t.id} title={`${t.label} theme`} aria-label={`${t.label} theme`} aria-pressed={theme===t.id} className={theme===t.id?"active":""} onClick={()=>pick(t.id)}><span>{t.icon}</span><small>{t.label}</small></button>)}</div>}
+export function ThemeDecor(){return <div className="themeDecor" aria-hidden="true"><div className="decorBig"><span className="halloweenOnly">🕸️</span><span className="christmasOnly">🎅</span></div><div className="decorTrail halloweenOnly">🎃　🕷️　🎃　🕷️</div><div className="decorTrail christmasOnly">🎄　🕯️　🎄　🕯️</div></div>}

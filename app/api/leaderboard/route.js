@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";import {pool,cleanup} from "../../../lib/db";
+export const runtime="nodejs";export const dynamic="force-dynamic";
+export async function GET(){await cleanup();const q=await pool.query(`SELECT p.player_key,p.display_name,p.bingo_at,r.id room_id,r.name room_name FROM players p JOIN rooms r ON r.id=p.room_id WHERE r.expires_at>NOW() AND p.bingo_at IS NOT NULL ORDER BY p.bingo_at ASC LIMIT 100`);return NextResponse.json(q.rows.map(x=>({playerKey:x.player_key,displayName:x.display_name,bingoAt:x.bingo_at,roomId:x.room_id,roomName:x.room_name})),{headers:{"Cache-Control":"no-store"}})}

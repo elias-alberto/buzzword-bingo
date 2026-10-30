@@ -1,0 +1,15 @@
+"use client";
+import { use, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+function cookie(n){return decodeURIComponent(document.cookie.split("; ").find(x=>x.startsWith(n+"="))?.split("=").slice(1).join("=")||"")}
+export default function Room({params}){
+ const {id}=use(params);const router=useRouter();const [data,setData]=useState(null);const [error,setError]=useState("");const name=typeof document!=="undefined"?cookie("bb_name"):"";const token=typeof document!=="undefined"?cookie("bb_token"):"";
+ async function join(){if(!name||!token)return router.replace(`/?next=${encodeURIComponent(`/room/${id}`)}`);const r=await fetch(`/api/rooms/${id}/join`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({displayName:name,token})});if(!r.ok){const d=await r.json();setError(d.error);return}setData(await r.json())}
+ async function refresh(){const r=await fetch(`/api/rooms/${id}/state?token=${encodeURIComponent(token)}`,{cache:"no-store"});if(r.status===410){setError("This room has closed.");setData(null);return}if(r.ok)setData(await r.json())}
+ useEffect(()=>{join();const x=setInterval(refresh,2500);return()=>clearInterval(x)},[id]);
+ async function mark(index){if(data?.won)return;const r=await fetch(`/api/rooms/${id}/mark`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,index})});if(r.ok)setData(await r.json())}
+ if(error)return <main className="shell narrow"><section className="card welcome"><h1>Room unavailable</h1><p>{error}</p><button onClick={()=>router.push("/")}>Back to rooms</button></section></main>;
+ if(!data)return <main className="shell narrow"><div className="card">Joining room…</div></main>;
+ return <main className="shell"><header><div><div className="eyebrow">{data.minutesLeft} MINUTES LEFT</div><h1>{data.room.name}</h1><p>{data.players} participant{data.players===1?"":"s"} joined · {data.room.lists.join(" + ")}</p></div><div className="actions"><button className="secondary" onClick={()=>navigator.clipboard.writeText(location.href)}>Copy invite link</button><button className="secondary" onClick={()=>router.push("/")}>Leave</button></div></header>{data.won&&<div className="success">🎉 Bingo! You are on this room’s leaderboard.</div>}
+ <div className="gamegrid"><section className="board">{data.board.map((w,i)=><button key={i} className={data.marked.includes(i)?"marked":""} disabled={data.won} onClick={()=>mark(i)}>{w}</button>)}</section><aside className="card"><h2>🏆 Room winners</h2><ol className="leaders">{data.leaderboard.map((p,i)=><li key={p.playerKey}><b>{i+1}. {p.displayName}</b><span>{new Date(p.bingoAt).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span></li>)}</ol>{!data.leaderboard.length&&<div className="empty">No bingo yet.</div>}</aside></div></main>
+}

@@ -1,0 +1,3 @@
+# Privacy summary
+
+Buzzword Bingo stores a participant-chosen display name in a first-party browser cookie for 30 days. A random browser token is also stored locally and is hashed before use as a database identifier. Active room records contain the room name, randomized board, marked squares, display name, join time, and bingo time. Rooms and associated player data expire 60 minutes after room creation and are deleted opportunistically during normal requests. The application code does not create analytics or application activity logs. Hosting and database providers may retain operational or security logs under their own policies.

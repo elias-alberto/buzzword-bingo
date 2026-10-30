@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server";import {cleanup} from "../../../../../lib/db";import {playerKey,validToken} from "../../../../../lib/game";import {payload} from "../join/route";
+export const runtime="nodejs";export const dynamic="force-dynamic";
+export async function GET(req,{params}){await cleanup();const {id}=await params,token=new URL(req.url).searchParams.get("token");if(!validToken(token))return NextResponse.json({error:"Invalid identity."},{status:400});const data=await payload(id,playerKey(token));return data?NextResponse.json(data,{headers:{"Cache-Control":"no-store"}}):NextResponse.json({error:"Room closed."},{status:410})}
